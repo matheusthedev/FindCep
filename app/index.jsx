@@ -2,8 +2,32 @@ import { Text, View, StyleSheet, ImageBackground, Image, ScrollView } from "reac
 import { Input } from '../components/input/input'
 import { Botao } from '../components/botao/botao'
 import { Card } from '../components/card/card'
+import axios from 'axios';
+import { useState } from "react";
 
 export default function Index() {
+
+  const[cep, setCep] = useState("");
+  const[jsonCep, setJsonCep] = useState({});
+
+  async function consultarCep(e) {
+    e.preventDefault();
+    try {
+      if (cep !== "" && cep.length === 8) {
+        const resposta = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+
+        setJsonCep(resposta.data);
+        
+        // console.log(jsonCep.logradouro);
+        
+      } else {
+        alert("O cep esta incorreto, digite com 8 numeros!")
+      }
+    } catch (error) {
+      console.log(error);
+
+    }
+  }
   return (
     <>
       {/* 1. Logo + Imagem de fundo */}
@@ -16,11 +40,22 @@ export default function Index() {
           {/* 2.1 Titulo */}
           <Text style={styles.titulo}>Consulte seu CEP</Text>
           {/* 2.2 Input */}
-          <Input />
+          <Input
+          valorCep={cep}
+          onChangeValorCep={e => setCep(e)}
+          />
           {/* 2.3 Botão */}
-          <Botao tituloBotao="Consultar" />
+          <Botao tituloBotao="Consultar" onPress={consultarCep} />
           {/* 2.3 Card de informações */}
-          <Card />
+          {jsonCep.cep && (<Card 
+          cep={jsonCep.cep}
+          logradouro={jsonCep.logradouro} 
+          bairro={jsonCep.bairro} 
+          uf={jsonCep.uf} 
+          estado={jsonCep.estado} 
+          regiao={jsonCep.regiao}
+          />)}
+          
         </View>
       </ScrollView>
     </>
